@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I due gemelli — registro pubblico</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>i due gemelli</h1>
+  <p class="sub">
+    Due processi generativi nati dallo stesso seme, lo stesso giorno.
+    Il Gemello A muta ogni giorno per una funzione deterministica interna:
+    nessun dato del mondo entra nella sua forma. Il Gemello B muta per la
+    stessa funzione, ma pesata dal riconoscimento ricevuto il giorno prima —
+    voti espliciti, vendite. Questo registro mostra la divergenza cosi'
+    com'e', giorno per giorno, senza commento.
+  </p>
+  <p class="formula">
+    Ogni immagine e' accompagnata dal genoma che l'ha generata e dal suo
+    hash SHA-256, verificabile confrontandolo con la cronologia del
+    repository pubblico. Nessun dato viene tracciato in modo passivo:
+    il voto e' l'unico segnale raccolto, ed e' un click esplicito.
+  </p>
+</header>
+
+<div class="columns">
+  <div class="col a">
+    <div class="col-head">
+      <h2>gemello a — autonomo</h2>
+      <span class="tag">seed + contatore, nessun altro input</span>
+    </div>
+    <div class="frame"><img id="img-a" alt="Stato del Gemello A"></div>
+    <div class="meta" id="meta-a"></div>
+  </div>
+
+  <div class="col b">
+    <div class="col-head">
+      <h2>gemello b — dipendente</h2>
+      <span class="tag">seed + contatore + pressione di riconoscimento</span>
+    </div>
+    <div class="frame"><img id="img-b" alt="Stato del Gemello B"></div>
+    <div class="meta" id="meta-b"></div>
+    <button class="vote" id="vote-btn">vota questa forma</button>
+    <p class="vote-note">
+      Il voto si somma alla pressione che il Gemello B ricevera' nel
+      prossimo tick. Non incide mai sul Gemello A. Un voto al giorno
+      per visitatore, senza tracciamento oltre il conteggio stesso.
+    </p>
+  </div>
+</div>
+
+<div class="controls">
+  <span class="daylabel" id="day-label">giorno —</span>
+  <input type="range" id="day-slider" min="0" max="0" value="0" step="1">
+  <span class="daylabel" id="date-label">—</span>
+</div>
+
+<footer>
+  <p>
+    Pantaleo — pratica artistica. Questo registro non chiede approvazione:
+    la mostra. Codice sorgente e cronologia completa dei genomi nel
+    repository pubblico del progetto.
+  </p>
+</footer>
+
+<script>
+const WORKER_VOTE_URL = ""; // da compilare con l'URL del Cloudflare Worker, vedi /cloudflare/README-worker.md
+
+let manifest = [];
+
+async function load() {
+  const res = await fetch("../data/manifest.json");
+  manifest = await res.json();
+  const slider = document.getElementById("day-slider");
+  slider.max = manifest.length - 1;
+  slider.value = manifest.length - 1;
+  render(manifest.length - 1);
+  slider.addEventListener("input", (e) => render(parseInt(e.target.value, 10)));
+}
+
+function fmtGenome(g) {
+  return Object.entries(g)
+    .map(([k, v]) => `<div class="row"><span>${k}</span><span>${v.toFixed(4)}</span></div>`)
+    .join("");
+}
+
+function render(dayIndex) {
+  const entry = manifest[dayIndex];
+  if (!entry) return;
+
+  document.getElementById("img-a").src = "../" + entry.twin_a.image;
+  document.getElementById("img-b").src = "../" + entry.twin_b.image;
+
+  document.getElementById("meta-a").innerHTML =
+    fmtGenome(entry.twin_a.genome) +
+    `<div class="row hash">sha256 ${entry.twin_a.sha256}</div>`;
+
+  const eng = entry.twin_b.engagement || { votes: 0, sales: 0, score: 0 };
+  document.getElementById("meta-b").innerHTML =
+    fmtGenome(entry.twin_b.genome) +
+    `<div class="row"><span>voti / vendite (giorno)</span><span>${eng.votes} / ${eng.sales}</span></div>` +
+    `<div class="row"><span>pressione applicata</span><span>${eng.score}</span></div>` +
+    `<div class="row hash">sha256 ${entry.twin_b.sha256}</div>`;
+
+  document.getElementById("day-label").textContent = `giorno ${entry.day}`;
+  document.getElementById("date-label").textContent = entry.date;
+}
+
+document.getElementById("vote-btn").addEventListener("click", async () => {
+  const btn = document.getElementById("vote-btn");
+  if (!WORKER_VOTE_URL) {
+    alert("Il meccanismo di voto non è ancora collegato su questo sito.");
+    return;
+  }
+  btn.disabled = true;
+  try {
+    await fetch(WORKER_VOTE_URL, { method: "POST" });
+    btn.textContent = "voto registrato";
+  } catch (e) {
+    btn.textContent = "voto non riuscito, riprova";
+    btn.disabled = false;
+  }
+});
+
+load();
+</script>
+
+</body>
+</html>

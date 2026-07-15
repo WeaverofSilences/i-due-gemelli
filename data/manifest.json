@@ -1,0 +1,41 @@
+[
+  {
+    "day": 0,
+    "date": "2026-07-15",
+    "twin_a": {
+      "genome": {
+        "f": 0.0425,
+        "k": 0.0625,
+        "Du": 0.16,
+        "Dv": 0.08,
+        "hue_lo": 0.58,
+        "hue_hi": 0.02,
+        "sat": 0.65,
+        "gamma": 1.1
+      },
+      "image": "data/images/day_0000_A.png",
+      "sha256": "83bd6e5b688bdd47d3a9e9f7ddf0f575c9b4b58e50e774f58c1a94a01e984963",
+      "revival_attempts": 0
+    },
+    "twin_b": {
+      "genome": {
+        "f": 0.0425,
+        "k": 0.0625,
+        "Du": 0.16,
+        "Dv": 0.08,
+        "hue_lo": 0.58,
+        "hue_hi": 0.02,
+        "sat": 0.65,
+        "gamma": 1.1
+      },
+      "image": "data/images/day_0000_B.png",
+      "sha256": "83bd6e5b688bdd47d3a9e9f7ddf0f575c9b4b58e50e774f58c1a94a01e984963",
+      "engagement": {
+        "votes": 0,
+        "sales": 0,
+        "score": 0.0
+      },
+      "revival_attempts": 0
+    }
+  }
+]
